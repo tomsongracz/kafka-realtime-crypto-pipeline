@@ -1,6 +1,6 @@
 # Real-time Pipeline: Kafka + AWS + Snowflake 
 
-**Real-time data pipeline** do przetwarzania danych o cenach kryptowalut. Dane są pobierane z API CoinGecko, przesyłane przez **Apache Kafka**, zapisywane do **AWS S3** w warstwach (bronze, silver, gold), a następnie ładowane do hurtowni danych **Snowflake** z modelowaniem wymiarowym (dimensional modeling).
+**Real-time data pipeline** do przetwarzania danych o cenach kryptowalut. Dane są pobierane z API CoinGecko, przesyłane przez **Apache Kafka**, zapisywane do chmury **AWS S3** w warstwach (bronze, silver, gold), a następnie ładowane do hurtowni danych **Snowflake** z modelowaniem wymiarowym (dimensional modeling).
 
 ---
 
@@ -320,6 +320,7 @@ Linting i formatowanie:
 ## 👤 Autor
 Projekt przygotowany w celach edukacyjnych i demonstracyjnych.
 Możesz mnie znaleźć na GitHubie: [tomsongracz](https://github.com/tomsongracz)
+
 
 
 
