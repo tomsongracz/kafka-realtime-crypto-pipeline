@@ -3,8 +3,9 @@
 # i generowanie poprawnych wiadomości Kafka. Używa mocka dla requests,
 # aby uniknąć rzeczywistych API calls (szybkie i stabilne testy).
 # Uruchomienie: pytest tests/test_producer.py -v
-# Fix dla CI: Mock KafkaProducer przed exec_module, by uniknąć NoBrokersAvailable
-# (globalna inicjalizacja w producer.py nie łączy się w testach).
+# Rozwiązanie problemu importu: Używamy importlib do bezpośredniego ładowania modułu,
+# aby uniknąć konfliktu z biblioteką 'kafka' (folder projektu ma tę samą nazwę).
+
 
 import os
 import importlib.util
@@ -14,6 +15,12 @@ from unittest.mock import Mock, patch
 PRODUCER_PATH = os.path.join(
     os.path.dirname(__file__), "..", "kafka", "producer", "producer.py"
 )
+
+# Ładujemy moduł bezpośrednio za pomocą importlib (bez konfliktu z biblioteką kafka)
+spec = importlib.util.spec_from_file_location("producer_module", PRODUCER_PATH)
+producer_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(producer_module)
+get_crypto_data = producer_module.get_crypto_data  # Pobieramy funkcję
 
 # Przykładowa odpowiedź mock z CoinGecko API (uproszczona dla testu)
 MOCK_COINGECKO_RESPONSE = [
@@ -37,19 +44,6 @@ MOCK_COINGECKO_RESPONSE = [
     },
 ]
 
-# Ładujemy moduł z mockiem Kafki (przed exec_module, by globalny producer był mockiem)
-with patch("kafka.KafkaProducer") as mock_kafka_producer:
-    # Ustawiamy mockowany producer (z send jako Mock dla testów)
-    mock_producer_instance = Mock()
-    mock_producer_instance.send = Mock()  # Symuluje wysyłanie
-    mock_kafka_producer.return_value = mock_producer_instance
-
-    # Teraz ładujemy moduł – inicjalizacja producer zostanie zmockowana
-    spec = importlib.util.spec_from_file_location("producer_module", PRODUCER_PATH)
-    producer_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(producer_module)
-    get_crypto_data = producer_module.get_crypto_data  # Pobieramy funkcję
-    producer = producer_module.producer  # Globalny producer (teraz mock)
 
 @patch("requests.get")  # Mockujemy requests.get, aby nie dzwonić do API
 def test_get_crypto_data(mock_get):
@@ -85,27 +79,33 @@ def test_get_crypto_data_empty_response(mock_get):
 
 
 # Uproszczony test dla logiki wysyłania - symulujemy bez pełnego main
-# (używamy globalnego mockowanego producer z modułu)
-@patch("requests.get")  # Mock dla API
+@patch("kafka.KafkaProducer.send")  # Mockujemy send z biblioteki kafka
 @patch("time.sleep")  # Mockujemy sleep, aby uniknąć czekania w teście
-def test_producer_sending_logic(mock_get, mock_sleep):
+@patch("requests.get")  # Mock dla API
+def test_producer_sending_logic(mock_get, mock_sleep, mock_send):
     # Ustawiamy mock dla get_crypto_data (przez requests)
     mock_response = Mock()
     mock_response.json.return_value = MOCK_COINGECKO_RESPONSE
     mock_get.return_value = mock_response
 
-    # Symulujemy logikę z main (używamy zmiennych z modułu + global producer)
+    # Tworzymy mockowany producer z biblioteki (bez konfliktu)
+    from kafka import KafkaProducer
+
+    mock_producer = Mock(spec=KafkaProducer)
+    mock_producer.send = mock_send  # Podmiana send na mock
+
+    # Symulujemy logikę z main (używamy zmiennych z modułu)
     topic = "crypto_prices"
     symbols = ["bitcoin", "ethereum"]  # Uproszczone do 2 dla testu
 
     crypto_data = get_crypto_data(symbols)
     for data in crypto_data:
-        producer.send(topic, value=data)  # Używa globalnego mockowanego producer
+        mock_producer.send(topic, value=data)
         print(f"Sent: {data}")  # Z oryginalnego kodu
 
     # Sprawdzenia: send wywołany 2 razy
-    assert producer.send.call_count == 2
+    assert mock_send.call_count == 2
     # Sprawdź argumenty pierwszego wywołania (topic i value)
-    call_args = producer.send.call_args_list[0]
+    call_args = mock_send.call_args_list[0]
     assert call_args[0][0] == topic  # Pierwszy arg to topic
     assert call_args[1]["value"] == crypto_data[0]  # value kwarg
