@@ -8,7 +8,7 @@
 
 | **Komponent**        | **Technologia**                                          | **Rola** |
 |-----------------------|----------------------------------------------------------|-----------|
-| **Streaming**         | Apache Kafka, Python (`kafka-python`)                   | Strumieniowe pobieranie i przesyłanie danych o kryptowalutach w czasie rzeczywistym |
+| **Streaming** | Apache Kafka (lokalny klaster w Dockerze), Zookeeper, Python (`kafka-python`) | Strumieniowe pobieranie i przesyłanie danych o kryptowalutach w czasie rzeczywistym |
 | **Dane wejściowe**    | CoinGecko API (REST)                                   | Źródło danych – notowania i metadane kryptowalut |
 | **Przechowywanie (Data Lake)** | AWS S3 (buckety: bronze, silver, gold, glue)       | Warstwy surowe, przetworzone i końcowe danych (bronze → silver → gold) |
 | **Modelowanie danych**      | Model gwiazdy: `dim_coin`, `fact_market_metrics`        | Modelowanie wymiarowe |
@@ -25,9 +25,15 @@
 
 ## 🚀 Jak to działa?
 
-- **Streaming danych**: Producent (producer) pobiera dane co 10 sekund i wysyła do Kafki.
+- **Środowisko lokalne**:
+
+Klaster Apache Kafka uruchamiany jest lokalnie w kontenerach Dockerowych przy użyciu docker-compose.
+Zookeeper pełni rolę koordynatora, a Kafka obsługuje temat (topic) z danymi o kryptowalutach.
+Producer i Consumer komunikują się z tym lokalnym brokerem.
+
+- **Streaming danych**: Producent (`producer.py`) pobiera dane co 10 sekund i wysyła do Kafki.
   
-- **Przetwarzanie ETL**: Konsument zapisuje surowe dane do S3 (bronze). Glue jobs czyści i transformuje dane (bronze → silver → gold).
+- **Przetwarzanie ETL**: Konsument (`consumer.py`) zapisuje surowe dane do S3 (bronze). Glue jobs czyści i transformuje dane (bronze → silver → gold).
   
 - **Warstwy danych**: Bronze (surowe JSON), Silver (oczyszczone Parquet), Gold (modelowanie wymiarowe: dim_coin + fact_market_metrics).
 
@@ -298,6 +304,7 @@ Linting i formatowanie:
 ## 👤 Autor
 Projekt przygotowany w celach edukacyjnych i demonstracyjnych.
 Możesz mnie znaleźć na GitHubie: [tomsongracz](https://github.com/tomsongracz)
+
 
 
 
