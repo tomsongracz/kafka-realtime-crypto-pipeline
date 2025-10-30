@@ -262,6 +262,22 @@ Linting i formatowanie:
 
 ---
 
+## ✅ Gotowe!
+
+**Po poprawnej konfiguracji:**
+
+- Apache Kafka strumieniuje dane o kryptowalutach w czasie rzeczywistym z CoinGecko API.
+
+- AWS Glue automatycznie przetwarza dane w warstwach S3 (bronze → silver → gold).
+
+- AWS Lambda orchestruje wywołania Glue i ładowanie danych do Snowflake (Snowpipe).
+
+- Pipeline działa w pełni automatycznie – od pobrania danych po modelowanie wymiarowe w Snowflake.
+
+- Możesz rozwijać i testować pipeline lokalnie w Dockerze lub w środowisku produkcyjnym AWS.
+
+---
+
 ## 🔄 CI/CD
 
 - **GitHub Actions**: Automatyczne testy + linting na push/PR do `main` (patrz `.github/workflows/ci.yml`).
@@ -280,6 +296,7 @@ Linting i formatowanie:
 ## 👤 Autor
 Projekt przygotowany w celach edukacyjnych i demonstracyjnych.
 Możesz mnie znaleźć na GitHubie: [tomsongracz](https://github.com/tomsongracz)
+
 
 
 
