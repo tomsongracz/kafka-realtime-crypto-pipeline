@@ -45,6 +45,22 @@ Producer i Consumer komunikują się z tym lokalnym brokerem.
 
 ---
 
+### 📊 Schemat przepływu danych
+
+```text
+CoinGecko API → [producer.py] → Apache Kafka (topic: crypto_prices)
+                              ↓
+Kafka → [consumer.py] → AWS S3 (Bronze Layer - Raw JSON)
+                              ↓
+S3 Bronze → [AWS Glue: bronze_to_silver_glue.py] → S3 Silver (Cleaned Parquet)
+                              ↓
+S3 Silver → [AWS Glue: silver_to_gold_glue.py] → S3 Gold (Dimensional Model)
+                              ↓
+S3 Gold → [Snowpipe + Stage] → Snowflake Data Warehouse
+```
+
+---
+
 ## 📁 Struktura Projektu
 
 ```bash
@@ -304,6 +320,7 @@ Linting i formatowanie:
 ## 👤 Autor
 Projekt przygotowany w celach edukacyjnych i demonstracyjnych.
 Możesz mnie znaleźć na GitHubie: [tomsongracz](https://github.com/tomsongracz)
+
 
 
 
