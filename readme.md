@@ -186,7 +186,7 @@ SELECT * FROM crypto_warehouse.public.dim_coin LIMIT 5;
 SELECT * FROM crypto_warehouse.public.fact_market_metrics LIMIT 5;
 ```
 
-## Testy
+## 🧪 Testy
 
 Uruchom testy jednostkowe i integracyjne:
 
@@ -209,7 +209,7 @@ Linting i formatowanie:
 ./dev_tools.sh lint
 ```
 
-## CI/CD
+## 🔄 CI/CD
 
 - **GitHub Actions**: Automatyczne testy + linting na push/PR do `main` (patrz `.github/workflows/ci.yml`).
 - **Deployment**: Ręczne via AWS CLI lub GitHub Actions (można rozszerzyć o CD).
@@ -258,7 +258,7 @@ kafka-realtime-crypto-pipeline/
 └── README.md                                 # Dokumentacja projektu
 ```
 
-## Rozszerzenia i przemyślenia
+## 🌟 Rozszerzenia i przemyślenia
 
 - Można dodać więcej kryptowalut lub źródeł API.
 - Implementacja monitoringu (CloudWatch Alerts).
@@ -267,6 +267,7 @@ kafka-realtime-crypto-pipeline/
 ## 👤 Autor
 Projekt przygotowany w celach edukacyjnych i demonstracyjnych.
 Możesz mnie znaleźć na GitHubie: [tomsongracz](https://github.com/tomsongracz)
+
 
 
 
