@@ -5,7 +5,7 @@
 # Uruchomienie: pytest tests/test_producer.py -v
 # Rozwiązanie problemu importu: Używamy importlib do bezpośredniego ładowania modułu,
 # aby uniknąć konfliktu z biblioteką 'kafka' (folder projektu ma tę samą nazwę).
-
+# NOWOŚĆ: Ładujemy moduł wewnątrz @patch("kafka.KafkaProducer"), by uniknąć realnego połączenia w CI.
 
 import os
 import importlib.util
@@ -15,12 +15,6 @@ from unittest.mock import Mock, patch
 PRODUCER_PATH = os.path.join(
     os.path.dirname(__file__), "..", "kafka", "producer", "producer.py"
 )
-
-# Ładujemy moduł bezpośrednio za pomocą importlib (bez konfliktu z biblioteką kafka)
-spec = importlib.util.spec_from_file_location("producer_module", PRODUCER_PATH)
-producer_module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(producer_module)
-get_crypto_data = producer_module.get_crypto_data  # Pobieramy funkcję
 
 # Przykładowa odpowiedź mock z CoinGecko API (uproszczona dla testu)
 MOCK_COINGECKO_RESPONSE = [
@@ -45,8 +39,28 @@ MOCK_COINGECKO_RESPONSE = [
 ]
 
 
+# NOWOŚĆ: Przenieś ładowanie modułu do fixture lub funkcji z patchem (tutaj: globalna funkcja do ładowania z mockiem)
+def load_producer_module_with_mock():
+    """Ładuje moduł z patchem na KafkaProducer – zwraca get_crypto_data."""
+    with patch("kafka.KafkaProducer") as mock_kafka_producer:
+        # Mock zwraca pusty obiekt (bez połączenia)
+        mock_producer_instance = Mock()
+        mock_kafka_producer.return_value = mock_producer_instance
+        
+        # Teraz ładuj moduł – inicjalizacja producer zostanie zmockowana
+        spec = importlib.util.spec_from_file_location("producer_module", PRODUCER_PATH)
+        producer_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(producer_module)
+        
+        # Zwróć funkcję do testów
+        return producer_module.get_crypto_data, mock_producer_instance
+
+
 @patch("requests.get")  # Mockujemy requests.get, aby nie dzwonić do API
 def test_get_crypto_data(mock_get):
+    # NOWOŚĆ: Ładuj moduł z mockiem Kafki w każdym teście (lub użyj pytest.fixture dla shared)
+    get_crypto_data, _ = load_producer_module_with_mock()
+    
     # Ustawiamy mockowaną odpowiedź z CoinGecko
     mock_response = Mock()
     mock_response.json.return_value = MOCK_COINGECKO_RESPONSE
@@ -67,6 +81,9 @@ def test_get_crypto_data(mock_get):
 
 @patch("requests.get")
 def test_get_crypto_data_empty_response(mock_get):
+    # NOWOŚĆ: Ładuj moduł z mockiem Kafki
+    get_crypto_data, _ = load_producer_module_with_mock()
+    
     # Test na pustą odpowiedź API (edge case)
     mock_response = Mock()
     mock_response.json.return_value = []
@@ -79,33 +96,30 @@ def test_get_crypto_data_empty_response(mock_get):
 
 
 # Uproszczony test dla logiki wysyłania - symulujemy bez pełnego main
-@patch("kafka.KafkaProducer.send")  # Mockujemy send z biblioteki kafka
 @patch("time.sleep")  # Mockujemy sleep, aby uniknąć czekania w teście
 @patch("requests.get")  # Mock dla API
-def test_producer_sending_logic(mock_get, mock_sleep, mock_send):
-    # Ustawiamy mock dla get_crypto_data (przez requests)
-    mock_response = Mock()
-    mock_response.json.return_value = MOCK_COINGECKO_RESPONSE
-    mock_get.return_value = mock_response
+def test_producer_sending_logic(mock_get, mock_sleep):
+    # NOWOŚĆ: Ładuj moduł z mockiem Kafki + patch na send
+    get_crypto_data, mock_producer = load_producer_module_with_mock()
+    with patch.object(mock_producer, "send") as mock_send:  # Patch na instancji mocka
+        
+        # Ustawiamy mock dla get_crypto_data (przez requests)
+        mock_response = Mock()
+        mock_response.json.return_value = MOCK_COINGECKO_RESPONSE
+        mock_get.return_value = mock_response
 
-    # Tworzymy mockowany producer z biblioteki (bez konfliktu)
-    from kafka import KafkaProducer
+        # Symulujemy logikę z main (używamy zmiennych z modułu)
+        topic = "crypto_prices"
+        symbols = ["bitcoin", "ethereum"]  # Uproszczone do 2 dla testu
 
-    mock_producer = Mock(spec=KafkaProducer)
-    mock_producer.send = mock_send  # Podmiana send na mock
+        crypto_data = get_crypto_data(symbols)
+        for data in crypto_data:
+            mock_producer.send(topic, value=data)
+            print(f"Sent: {data}")  # Z oryginalnego kodu
 
-    # Symulujemy logikę z main (używamy zmiennych z modułu)
-    topic = "crypto_prices"
-    symbols = ["bitcoin", "ethereum"]  # Uproszczone do 2 dla testu
-
-    crypto_data = get_crypto_data(symbols)
-    for data in crypto_data:
-        mock_producer.send(topic, value=data)
-        print(f"Sent: {data}")  # Z oryginalnego kodu
-
-    # Sprawdzenia: send wywołany 2 razy
-    assert mock_send.call_count == 2
-    # Sprawdź argumenty pierwszego wywołania (topic i value)
-    call_args = mock_send.call_args_list[0]
-    assert call_args[0][0] == topic  # Pierwszy arg to topic
-    assert call_args[1]["value"] == crypto_data[0]  # value kwarg
+        # Sprawdzenia: send wywołany 2 razy
+        assert mock_send.call_count == 2
+        # Sprawdź argumenty pierwszego wywołania (topic i value)
+        call_args = mock_send.call_args_list[0]
+        assert call_args[0][0] == topic  # Pierwszy arg to topic
+        assert call_args[1]["value"] == crypto_data[0]  # value kwarg
