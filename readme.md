@@ -37,7 +37,7 @@
 
 ---
 
-## Struktura Projektu
+## 📁 Struktura Projektu
 
 ```bash
 kafka-realtime-crypto-pipeline/
@@ -280,6 +280,7 @@ Linting i formatowanie:
 ## 👤 Autor
 Projekt przygotowany w celach edukacyjnych i demonstracyjnych.
 Możesz mnie znaleźć na GitHubie: [tomsongracz](https://github.com/tomsongracz)
+
 
 
 
