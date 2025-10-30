@@ -19,6 +19,8 @@
 | **Testy & CI/CD**     | pytest, flake8, black, GitHub Actions                  | Testy jednostkowe, linting, formatowanie kodu i automatyczne wdrożenia |
 | **Język**             | Python 3.11                                            | Główny język implementacji pipeline’u |
 
+> Kod sformatowany za pomocą **Black** + **Flake8** (ignorowanie `F401`).
+
 ---
 
 ## 🚀 Opis projektu
@@ -296,6 +298,7 @@ Linting i formatowanie:
 ## 👤 Autor
 Projekt przygotowany w celach edukacyjnych i demonstracyjnych.
 Możesz mnie znaleźć na GitHubie: [tomsongracz](https://github.com/tomsongracz)
+
 
 
 
