@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Szablon CloudFormation do tworzenia funkcji Lambda, która automatycznie uruchamia Glue Job
+  po pojawieniu się nowego pliku w buckecie S3 warstwy bronze. To zapewnia automatyczne
+  przetwarzanie danych w pipeline'ie bez ręcznej interwencji.
+
+# Parametry szablonu – pozwalają na łatwą konfigurację bez edycji kodu
+Parameters:
+  BronzeBucket:
+    Type: String
+    Default: kafka-realtime-crypto-bronze  # Nazwa bucketa S3 z danymi surowymi (bronze)
+    Description: Nazwa bucketa S3, w którym lądują nowe pliki JSON z Kafki
+  GlueJobName:
+    Type: String
+    Default: bronze-to-silver-job  # Nazwa Glue Joba do uruchomienia po wykryciu nowego pliku
+    Description: Nazwa istniejącego Glue Joba odpowiedzialnego za przetwarzanie bronze → silver
+  LambdaRoleName:
+    Type: String
+    Default: lambda_bronze_trigger_role  # Nazwa roli IAM dla tej funkcji Lambda
+    Description: Nazwa roli IAM, którą Lambda będzie używać do dostępu do Glue i CloudWatch
+
+# Zasoby tworzone przez szablon
+Resources:
+  # Rola IAM dla funkcji Lambda – pozwala Lambdzie na założenie roli i wykonywanie akcji
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref LambdaRoleName  # Używa nazwy z parametru
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow  # Pozwala na założenie roli
+            Principal:
+              Service: lambda.amazonaws.com  # Tylko usługi Lambda mogą założyć tę rolę
+            Action: sts:AssumeRole  # Akcja założenia roli
+      # Polityki IAM przypisane do roli – definiują uprawnienia
+      Policies:
+        - PolicyName: lambda-glue-s3-trigger  # Nazwa polityki
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              # Uprawnienia do uruchamiania Glue Jobów
+              - Effect: Allow
+                Action: glue:StartJobRun  # Akcja startowania joba w Glue
+                Resource: "*"  # Na wszystkie Glue Joby (w praktyce ogranicz do swoich)
+              # Uprawnienia do logowania w CloudWatch Logs
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup  # Tworzenie grupy logów
+                  - logs:CreateLogStream  # Tworzenie strumienia logów
+                  - logs:PutLogEvents  # Wpis do logów
+                Resource: "*"  # Na wszystkie logi CloudWatch
+
+  # Funkcja Lambda – główny trigger reagujący na eventy S3
+  GlueTriggerLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: s3-bronze-trigger-glue  # Nazwa funkcji w AWS Lambda
+      Handler: index.lambda_handler  # Punkt wejścia: funkcja lambda_handler w module index
+      Runtime: python3.11  # Wersja Pythona w kontenerze Lambda
+      Timeout: 30  # Limit czasu wykonania (sekundy) – wystarczy na start joba
+      Role: !GetAtt LambdaExecutionRole.Arn  # ARN roli IAM przypisanej do Lambdy
+      # Zmienne środowiskowe – przekazywane do kodu Pythona
+      Environment:
+        Variables:
+          GLUE_JOB_NAME: !Ref GlueJobName  # Nazwa Glue Joba z parametru
+      # Kod funkcji Lambda – inline w ZIP (prosty skrypt Python)
+      Code:
+        ZipFile: |
+          import json  # Do parsowania eventu z S3
+          import boto3  # SDK AWS do komunikacji z Glue
+          import os  # Do odczytu zmiennych środowiskowych
+
+          # Klient Glue – do uruchamiania jobów
+          glue = boto3.client("glue")
+
+          # Główna funkcja handlera Lambda – wywołana przez event S3
+          def lambda_handler(event, context):
+              job_name = os.environ["GLUE_JOB_NAME"]  # Pobranie nazwy joba z env var
+              print(f"Triggered by S3 event: {json.dumps(event)}")  # Log eventu dla debugu
+              response = glue.start_job_run(JobName=job_name)  # Uruchomienie Glue Joba
+              print(f"Started Glue job: {job_name} → RunId: {response['JobRunId']}")  # Log ID runa
+              # Zwrot sukcesu z ID runa – Lambda kończy sukcesem
+              return {"status": "success", "run_id": response["JobRunId"]}
+
+  # Uprawnienie dla S3 – pozwala buckecie S3 na wywoływanie Lambdy
+  LambdaPermissionForS3:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GlueTriggerLambda  # Nazwa Lambdy, którą S3 może wywołać
+      Action: "lambda:InvokeFunction"  # Akcja: wywołanie funkcji
+      Principal: "s3.amazonaws.com"  # Źródło: usługi S3
+      SourceAccount: !Ref AWS::AccountId  # Konto AWS (twoje)
+      SourceArn: !Sub "arn:aws:s3:::${BronzeBucket}"  # ARN bucketa S3 jako źródło eventu

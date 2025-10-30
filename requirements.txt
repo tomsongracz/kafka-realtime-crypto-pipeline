@@ -1,0 +1,13 @@
+# Core dependencies (runtime)
+kafka-python==2.0.2    # komunikacja z Apache Kafka
+requests==2.31.0       # zapytania HTTP do CoinGecko API
+boto3==1.35.0          # obsługa AWS S3 i Glue
+
+# Test dependencies (dla pytest i symulacji ETL)
+pytest==8.3.2         # framework do testów jednostkowych
+pytest-mock==3.14.0    # mockowanie (Kafka, S3, API)
+pandas==2.1.4          # symulacja DataFrame w testach ETL (bronze/silver/gold)
+flake8==7.1.0          # linting błędów stylu
+
+# DevOps dependencies (formatowanie kodu)
+black==24.8.0          # auto-formatowanie kodu (używane w dev_tools.sh)

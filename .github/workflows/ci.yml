@@ -1,0 +1,89 @@
+# .github/workflows/ci.yml
+# GitHub Actions workflow dla CI/CD pipeline'u.
+# Uruchamia testy jednostkowe/integracyjne (pytest) oraz linting (black + flake8)
+# na każdym push/pull request do main. Zapewnia jakość kodu przed merge'em.
+# Wymaga: Python 3.11, requirements.txt w root.
+
+name: CI Pipeline
+
+# Triggers: uruchamiaj na push/pull request do main
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# Jobs: sekwencyjne kroki (testy -> linting)
+jobs:
+  test:
+    # Runner: Ubuntu (dla Pythona i Docker, jeśli potrzeba)
+    runs-on: ubuntu-latest
+
+    # Kroki w jobie test
+    steps:
+    # Checkout: pobierz repozytorium
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Setup Python: zainstaluj Python 3.11
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    # Cache: przyspiesz instalację pip (cache dependencies)
+    - name: Cache pip
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+    # Install deps: zainstaluj z requirements.txt (w tym pytest, flake8 itp.)
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # Run tests: uruchom pytest na folderze tests/
+    - name: Run tests
+      run: |
+        pytest tests/ -v --tb=short
+
+  lint:
+    # Runner: ten sam co test
+    runs-on: ubuntu-latest
+
+    # Kroki w jobie lint
+    steps:
+    # Checkout: pobierz repozytorium
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Setup Python: jak wyżej
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    # Cache: dla pip
+    - name: Cache pip
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+    # Install deps: black i flake8 (już w requirements.txt)
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # Black check: sprawdź formatowanie (nie formatuj, tylko waliduj)
+    - name: Check code formatting with Black
+      run: |
+        black . --check --diff
+
+    # Flake8: sprawdź styl i błędy
+    - name: Lint with Flake8
+      run: |
+        flake8 . --max-line-length=200 --extend-ignore=F401

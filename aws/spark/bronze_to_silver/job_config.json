@@ -1,0 +1,20 @@
+{
+  "Name": "bronze-to-silver-job",
+  "Role": "arn:aws:iam::<YOUR_ACCOUNT_ID>:role/AWSGlueServiceRole",
+  "Command": {
+    "Name": "glueetl",
+    "ScriptLocation": "s3://<YOUR_SCRIPT_BUCKET>/bronze_to_silver_glue.py",
+    "PythonVersion": "3"
+  },
+  "DefaultArguments": {
+    "--job-language": "python",
+    "--enable-continuous-cloudwatch-log": "true",
+    "--bronze_bucket": "kafka-realtime-crypto-bronze",
+    "--silver_bucket": "kafka-realtime-crypto-silver"
+  },
+  "MaxRetries": 0,
+  "ExecutionProperty": { "MaxConcurrentRuns": 1 },
+  "GlueVersion": "4.0",
+  "NumberOfWorkers": 2,
+  "WorkerType": "G.1X"
+}
