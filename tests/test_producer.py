@@ -46,12 +46,10 @@ def load_producer_module_with_mock():
         # Mock zwraca pusty obiekt (bez połączenia)
         mock_producer_instance = Mock()
         mock_kafka_producer.return_value = mock_producer_instance
-        
         # Teraz ładuj moduł – inicjalizacja producer zostanie zmockowana
         spec = importlib.util.spec_from_file_location("producer_module", PRODUCER_PATH)
         producer_module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(producer_module)
-        
         # Zwróć funkcję do testów
         return producer_module.get_crypto_data, mock_producer_instance
 
@@ -60,7 +58,6 @@ def load_producer_module_with_mock():
 def test_get_crypto_data(mock_get):
     # NOWOŚĆ: Ładuj moduł z mockiem Kafki w każdym teście (lub użyj pytest.fixture dla shared)
     get_crypto_data, _ = load_producer_module_with_mock()
-    
     # Ustawiamy mockowaną odpowiedź z CoinGecko
     mock_response = Mock()
     mock_response.json.return_value = MOCK_COINGECKO_RESPONSE
@@ -83,7 +80,6 @@ def test_get_crypto_data(mock_get):
 def test_get_crypto_data_empty_response(mock_get):
     # NOWOŚĆ: Ładuj moduł z mockiem Kafki
     get_crypto_data, _ = load_producer_module_with_mock()
-    
     # Test na pustą odpowiedź API (edge case)
     mock_response = Mock()
     mock_response.json.return_value = []
@@ -102,7 +98,6 @@ def test_producer_sending_logic(mock_get, mock_sleep):
     # NOWOŚĆ: Ładuj moduł z mockiem Kafki + patch na send
     get_crypto_data, mock_producer = load_producer_module_with_mock()
     with patch.object(mock_producer, "send") as mock_send:  # Patch na instancji mocka
-        
         # Ustawiamy mock dla get_crypto_data (przez requests)
         mock_response = Mock()
         mock_response.json.return_value = MOCK_COINGECKO_RESPONSE
