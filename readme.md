@@ -2,23 +2,9 @@
 
 **Real-time data pipeline** do przetwarzania danych o cenach kryptowalut. Dane są pobierane z API CoinGecko, przesyłane przez Apache Kafka, zapisywane do AWS S3 w warstwach (bronze, silver, gold), a następnie ładowane do hurtowni danych Snowflake z modelowaniem wymiarowym (dimensional modeling).
 
-**Kluczowe cechy:**
-- **Streaming danych**: Producent (producer) pobiera dane co 10 sekund i wysyła do Kafki.
-- **Przetwarzanie ETL**: Konsument zapisuje surowe dane do S3 (bronze). Glue jobs czyści i transformują dane (silver → gold).
-- **Warstwy danych**: Bronze (surowe JSON), Silver (oczyszczone Parquet), Gold (model gwiazdowy: dim_coin + fact_market_metrics).
-- **Automatyzacja**: Lambda triggery na S3 uruchamiają Glue jobs automatycznie.
-- **Hurtownia danych**: Snowflake z automatycznym ładowaniem (Snowpipe) z S3.
-- **CI/CD**: GitHub Actions do testów i lintingu.
+---
 
-Projekt jest idealny do portfolio na stanowisko **Junior Data Engineer**, pokazując umiejętności w streamingu, chmurze AWS, DevOps i modelowaniu danych.
-
-**Umiejętności demonstrowane:**
-- Streaming (Apache Kafka)
-- Praca z chmurą (AWS S3, Glue, Lambda, CloudFormation)
-- DevOps (Docker, GitHub Actions)
-- Dimensional modeling (Star Schema w Snowflake)
-
-## Stack Technologiczny
+## 🛠 Stack Technologiczny
 
 | Kategoria       | Technologie                          |
 |-----------------|--------------------------------------|
@@ -31,6 +17,19 @@ Projekt jest idealny do portfolio na stanowisko **Junior Data Engineer**, pokazu
 | **Konteneryzacja** | Docker, docker-compose             |
 | **Testy & CI/CD** | pytest, flake8, black, GitHub Actions |
 | **Język**       | Python 3.11                         |
+
+---
+
+**🚀Opis projektu:**
+
+- **Streaming danych**: Producent (producer) pobiera dane co 10 sekund i wysyła do Kafki.
+- **Przetwarzanie ETL**: Konsument zapisuje surowe dane do S3 (bronze). Glue jobs czyści i transformują dane (silver → gold).
+- **Warstwy danych**: Bronze (surowe JSON), Silver (oczyszczone Parquet), Gold (modelowanie wymiarowe: dim_coin + fact_market_metrics).
+- **Automatyzacja**: Lambda triggery na S3 uruchamiają Glue jobs automatycznie.
+- **Hurtownia danych**: Snowflake z automatycznym ładowaniem (Snowpipe) z S3.
+- **CI/CD**: GitHub Actions do testów i lintingu.
+
+---
 
 ## Wymagania
 
@@ -247,6 +246,7 @@ kafka-realtime-crypto-pipeline/
 ## 👤 Autor
 Projekt przygotowany w celach edukacyjnych i demonstracyjnych.
 Możesz mnie znaleźć na GitHubie: [tomsongracz](https://github.com/tomsongracz)
+
 
 
 
