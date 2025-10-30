@@ -39,7 +39,7 @@ MOCK_COINGECKO_RESPONSE = [
 ]
 
 
-# NOWOŚĆ: Przenieś ładowanie modułu do fixture lub funkcji z patchem (tutaj: globalna funkcja do ładowania z mockiem)
+# Przenieś ładowanie modułu do fixture lub funkcji z patchem (tutaj: globalna funkcja do ładowania z mockiem)
 def load_producer_module_with_mock():
     """Ładuje moduł z patchem na KafkaProducer – zwraca get_crypto_data."""
     with patch("kafka.KafkaProducer") as mock_kafka_producer:
@@ -56,7 +56,7 @@ def load_producer_module_with_mock():
 
 @patch("requests.get")  # Mockujemy requests.get, aby nie dzwonić do API
 def test_get_crypto_data(mock_get):
-    # NOWOŚĆ: Ładuj moduł z mockiem Kafki w każdym teście (lub użyj pytest.fixture dla shared)
+    # Ładuj moduł z mockiem Kafki w każdym teście (lub użyj pytest.fixture dla shared)
     get_crypto_data, _ = load_producer_module_with_mock()
     # Ustawiamy mockowaną odpowiedź z CoinGecko
     mock_response = Mock()
@@ -78,7 +78,7 @@ def test_get_crypto_data(mock_get):
 
 @patch("requests.get")
 def test_get_crypto_data_empty_response(mock_get):
-    # NOWOŚĆ: Ładuj moduł z mockiem Kafki
+    # Ładuj moduł z mockiem Kafki
     get_crypto_data, _ = load_producer_module_with_mock()
     # Test na pustą odpowiedź API (edge case)
     mock_response = Mock()
@@ -95,7 +95,7 @@ def test_get_crypto_data_empty_response(mock_get):
 @patch("time.sleep")  # Mockujemy sleep, aby uniknąć czekania w teście
 @patch("requests.get")  # Mock dla API
 def test_producer_sending_logic(mock_get, mock_sleep):
-    # NOWOŚĆ: Ładuj moduł z mockiem Kafki + patch na send
+    # Ładuj moduł z mockiem Kafki + patch na send
     get_crypto_data, mock_producer = load_producer_module_with_mock()
     with patch.object(mock_producer, "send") as mock_send:  # Patch na instancji mocka
         # Ustawiamy mock dla get_crypto_data (przez requests)
