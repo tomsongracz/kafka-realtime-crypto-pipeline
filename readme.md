@@ -6,17 +6,17 @@
 
 ## 🛠 Stack Technologiczny
 
-| Kategoria       | Technologie                          |
-|-----------------|--------------------------------------|
-| **Streaming**   | Apache Kafka, Python (kafka-python) |
-| **Dane wejściowe** | CoinGecko API (REST)               |
-| **Przechowywanie** | AWS S3 (buckety: bronze, silver, gold, glue) |
-| **ETL**         | AWS Glue (PySpark)                  |
-| **Orkiestracja** | AWS Lambda, CloudFormation, S3 Events |
-| **Hurtownia**   | Snowflake (Snowpipe, Stage, Warehouse) |
-| **Konteneryzacja** | Docker, docker-compose             |
-| **Testy & CI/CD** | pytest, flake8, black, GitHub Actions |
-| **Język**       | Python 3.11                         |
+| **Komponent**        | **Technologia**                                          | **Rola** |
+|-----------------------|----------------------------------------------------------|-----------|
+| **Streaming**         | Apache Kafka, Python (`kafka-python`)                   | Strumieniowe pobieranie i przesyłanie danych o kryptowalutach w czasie rzeczywistym |
+| **Dane wejściowe**    | CoinGecko API (REST)                                   | Źródło danych – notowania i metadane kryptowalut |
+| **Przechowywanie (Data Lake)** | AWS S3 (buckety: bronze, silver, gold, glue)       | Warstwy surowe, przetworzone i końcowe danych (bronze → silver → gold) |
+| **ETL**               | AWS Glue (PySpark)                                     | Transformacja danych, czyszczenie, deduplikacja i zapis do S3 |
+| **Orkiestracja**      | AWS Lambda, CloudFormation, S3 Events                  | Automatyzacja wywołań Glue i Snowpipe, zarządzanie infrastrukturą |
+| **Hurtownia danych**  | Snowflake (Snowpipe, Stage, Warehouse)                  | Automatyczne ładowanie danych z S3 (GOLD) do tabel analitycznych |
+| **Konteneryzacja**    | Docker, docker-compose                                 | Uruchamianie środowiska lokalnego i usług pomocniczych |
+| **Testy & CI/CD**     | pytest, flake8, black, GitHub Actions                  | Testy jednostkowe, linting, formatowanie kodu i automatyczne wdrożenia |
+| **Język**             | Python 3.11                                            | Główny język implementacji pipeline’u |
 
 ---
 
@@ -246,6 +246,7 @@ kafka-realtime-crypto-pipeline/
 ## 👤 Autor
 Projekt przygotowany w celach edukacyjnych i demonstracyjnych.
 Możesz mnie znaleźć na GitHubie: [tomsongracz](https://github.com/tomsongracz)
+
 
 
 
