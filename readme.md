@@ -67,7 +67,7 @@
 
 ```bash
 git clone https://github.com/tomsongracz/kafka-realtime-crypto-pipeline.git
-   cd kafka-realtime-crypto-pipeline
+cd kafka-realtime-crypto-pipeline
 ```
 
 
@@ -88,10 +88,10 @@ Wpisz Access Key ID, Secret Access Key, Region: `eu-north-1`.
 4. **Utwórz buckety S3 (jeśli nie istnieją):**
 
 ```bash
-   aws s3 mb s3://kafka-realtime-crypto-bronze --region eu-north-1
-   aws s3 mb s3://kafka-realtime-crypto-silver --region eu-north-1
-   aws s3 mb s3://kafka-realtime-crypto-gold --region eu-north-1
-   aws s3 mb s3://kafka-realtime-crypto-glue --region eu-north-1
+aws s3 mb s3://kafka-realtime-crypto-bronze --region eu-north-1
+aws s3 mb s3://kafka-realtime-crypto-silver --region eu-north-1
+aws s3 mb s3://kafka-realtime-crypto-gold --region eu-north-1
+aws s3 mb s3://kafka-realtime-crypto-glue --region eu-north-1
 ```
 
 
@@ -103,28 +103,28 @@ Wpisz Access Key ID, Secret Access Key, Region: `eu-north-1`.
 6. **Wrzuć skrypty Glue do S3:**
 
 ```bash
-   aws s3 cp aws/spark/bronze_to_silver/bronze_to_silver_glue.py s3://kafka-realtime-crypto-glue/
-   aws s3 cp aws/spark/silver_to_gold/silver_to_gold_glue.py s3://kafka-realtime-crypto-glue/
+aws s3 cp aws/spark/bronze_to_silver/bronze_to_silver_glue.py s3://kafka-realtime-crypto-glue/
+aws s3 cp aws/spark/silver_to_gold/silver_to_gold_glue.py s3://kafka-realtime-crypto-glue/
 ```
 
 
 7. **Utwórz Glue Jobs:**
 
 ```bash
-   aws glue create-job --region eu-north-1 --name bronze-to-silver-job --role arn:aws:iam::YOUR_ACCOUNT:role/glue_s3_role --command "Name=glueetl,ScriptLocation=s3://kafka-realtime-crypto-glue/bronze_to_silver_glue.py,PythonVersion=3" --default-arguments '{"--job-language":"python","--bronze_bucket":"kafka-realtime-crypto-bronze","--silver_bucket":"kafka-realtime-crypto-silver","--enable-continuous-cloudwatch-log":"true"}' --glue-version "4.0" --number-of-workers 2 --worker-type G.1X   aws glue create-job --region eu-north-1 --name silver-to-gold-job --role arn:aws:iam::YOUR_ACCOUNT:role/glue_s3_role --command "Name=glueetl,ScriptLocation=s3://kafka-realtime-crypto-glue/silver_to_gold_glue.py,PythonVersion=3" --default-arguments '{"--job-language":"python","--silver_bucket":"kafka-realtime-crypto-silver","--gold_bucket":"kafka-realtime-crypto-gold","--enable-continuous-cloudwatch-log":"true"}' --glue-version "4.0" --number-of-workers 2 --worker-type G.1X
+aws glue create-job --region eu-north-1 --name bronze-to-silver-job --role arn:aws:iam::YOUR_ACCOUNT:role/glue_s3_role --command "Name=glueetl,ScriptLocation=s3://kafka-realtime-crypto-glue/bronze_to_silver_glue.py,PythonVersion=3" --default-arguments '{"--job-language":"python","--bronze_bucket":"kafka-realtime-crypto-bronze","--silver_bucket":"kafka-realtime-crypto-silver","--enable-continuous-cloudwatch-log":"true"}' --glue-version "4.0" --number-of-workers 2 --worker-type G.1X   aws glue create-job --region eu-north-1 --name silver-to-gold-job --role arn:aws:iam::YOUR_ACCOUNT:role/glue_s3_role --command "Name=glueetl,ScriptLocation=s3://kafka-realtime-crypto-glue/silver_to_gold_glue.py,PythonVersion=3" --default-arguments '{"--job-language":"python","--silver_bucket":"kafka-realtime-crypto-silver","--gold_bucket":"kafka-realtime-crypto-gold","--enable-continuous-cloudwatch-log":"true"}' --glue-version "4.0" --number-of-workers 2 --worker-type G.1X
 ```
 
 8. **Wdróż triggery Lambda (CloudFormation):**
 
 ```bash
-   aws cloudformation deploy --template-file aws/lambda_bronze_trigger.yaml --stack-name bronze-glue-trigger-stack --capabilities CAPABILITY_NAMED_IAM --region eu-north-1
-   aws cloudformation deploy --template-file aws/lambda_silver_trigger.yaml --stack-name silver-glue-trigger-stack --capabilities CAPABILITY_NAMED_IAM --region eu-north-1
+aws cloudformation deploy --template-file aws/lambda_bronze_trigger.yaml --stack-name bronze-glue-trigger-stack --capabilities CAPABILITY_NAMED_IAM --region eu-north-1
+aws cloudformation deploy --template-file aws/lambda_silver_trigger.yaml --stack-name silver-glue-trigger-stack --capabilities CAPABILITY_NAMED_IAM --region eu-north-1
 ```
 
 9. **Skonfiguruj S3 Notifications (dla Lambda):**
 
 ```bash
-   aws s3api put-bucket-notification-configuration --bucket kafka-realtime-crypto-bronze --notification-configuration '{"LambdaFunctionConfigurations":[{"LambdaFunctionArn":"arn:aws:lambda:eu-north-1:YOUR_ACCOUNT:function:s3-bronze-trigger-glue","Events":["s3:ObjectCreated:*"],"Filter":{"Key":{"FilterRules":[{"Name":"prefix","Value":"bronze/"}]}}]}' --region eu-north-1   aws s3api put-bucket-notification-configuration --bucket kafka-realtime-crypto-silver --notification-configuration '{"LambdaFunctionConfigurations":[{"LambdaFunctionArn":"arn:aws:lambda:eu-north-1:YOUR_ACCOUNT:function:s3-silver-trigger-glue","Events":["s3:ObjectCreated:*"],"Filter":{"Key":{"FilterRules":[{"Name":"prefix","Value":"silver/"}]}}]}' --region eu-north-1
+aws s3api put-bucket-notification-configuration --bucket kafka-realtime-crypto-bronze --notification-configuration '{"LambdaFunctionConfigurations":[{"LambdaFunctionArn":"arn:aws:lambda:eu-north-1:YOUR_ACCOUNT:function:s3-bronze-trigger-glue","Events":["s3:ObjectCreated:*"],"Filter":{"Key":{"FilterRules":[{"Name":"prefix","Value":"bronze/"}]}}]}' --region eu-north-1   aws s3api put-bucket-notification-configuration --bucket kafka-realtime-crypto-silver --notification-configuration '{"LambdaFunctionConfigurations":[{"LambdaFunctionArn":"arn:aws:lambda:eu-north-1:YOUR_ACCOUNT:function:s3-silver-trigger-glue","Events":["s3:ObjectCreated:*"],"Filter":{"Key":{"FilterRules":[{"Name":"prefix","Value":"silver/"}]}}]}' --region eu-north-1
 ```
 
 10. **Skonfiguruj Snowflake:**
@@ -136,7 +136,7 @@ Wpisz Access Key ID, Secret Access Key, Region: `eu-north-1`.
 1. **Uruchom Kafka + Zookeeper (Docker):**
 
 ```bash
- ./start-local.sh
+./start-local.sh
 ```
 
 Sprawdź: `docker ps` (powinny działać `zookeeper` i `kafka`).
@@ -160,15 +160,15 @@ Widoczny output: `Saved to S3: bronze/btc/2025-10-30_12-00-00.json`.
 4. **Ręczne uruchomienie Glue Jobs (testowo):**
 
 ```bash
-   aws glue start-job-run --job-name bronze-to-silver-job --region eu-north-1
-   aws glue start-job-run --job-name silver-to-gold-job --region eu-north-1
+aws glue start-job-run --job-name bronze-to-silver-job --region eu-north-1
+aws glue start-job-run --job-name silver-to-gold-job --region eu-north-1
 ```
 
 5. **Sprawdź dane w Snowflake:**
 
 ```sql
-   SELECT * FROM crypto_warehouse.public.dim_coin LIMIT 5;
-   SELECT * FROM crypto_warehouse.public.fact_market_metrics LIMIT 5;
+SELECT * FROM crypto_warehouse.public.dim_coin LIMIT 5;
+SELECT * FROM crypto_warehouse.public.fact_market_metrics LIMIT 5;
 ```
 
 ## Testy
@@ -252,6 +252,7 @@ kafka-realtime-crypto-pipeline/
 ## 👤 Autor
 Projekt przygotowany w celach edukacyjnych i demonstracyjnych.
 Możesz mnie znaleźć na GitHubie: [tomsongracz](https://github.com/tomsongracz)
+
 
 
 
