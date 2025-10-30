@@ -11,6 +11,7 @@
 | **Streaming**         | Apache Kafka, Python (`kafka-python`)                   | Strumieniowe pobieranie i przesyłanie danych o kryptowalutach w czasie rzeczywistym |
 | **Dane wejściowe**    | CoinGecko API (REST)                                   | Źródło danych – notowania i metadane kryptowalut |
 | **Przechowywanie (Data Lake)** | AWS S3 (buckety: bronze, silver, gold, glue)       | Warstwy surowe, przetworzone i końcowe danych (bronze → silver → gold) |
+| **Modelowanie danych**      | Model gwiazdy: `dim_coin`, `fact_market_metrics`        | Modelowanie wymiarowe |
 | **ETL**               | AWS Glue (PySpark)                                     | Transformacja danych, czyszczenie, deduplikacja i zapis do S3 |
 | **Orkiestracja**      | AWS Lambda, CloudFormation, S3 Events                  | Automatyzacja wywołań Glue i Snowpipe, zarządzanie infrastrukturą |
 | **Hurtownia danych**  | Snowflake (Snowpipe, Stage, Warehouse)                  | Automatyczne ładowanie danych z S3 (GOLD) do tabel analitycznych |
@@ -246,6 +247,7 @@ kafka-realtime-crypto-pipeline/
 ## 👤 Autor
 Projekt przygotowany w celach edukacyjnych i demonstracyjnych.
 Możesz mnie znaleźć na GitHubie: [tomsongracz](https://github.com/tomsongracz)
+
 
 
 
