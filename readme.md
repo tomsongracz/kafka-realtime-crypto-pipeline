@@ -27,7 +27,7 @@
 
 - **Streaming danych**: Producent (producer) pobiera dane co 10 sekund i wysyła do Kafki.
   
-- **Przetwarzanie ETL**: Konsument zapisuje surowe dane do S3 (bronze). Glue jobs czyści i transformują dane (silver → gold).
+- **Przetwarzanie ETL**: Konsument zapisuje surowe dane do S3 (bronze). Glue jobs czyści i transformuje dane (bronze → silver → gold).
   
 - **Warstwy danych**: Bronze (surowe JSON), Silver (oczyszczone Parquet), Gold (modelowanie wymiarowe: dim_coin + fact_market_metrics).
 
@@ -298,6 +298,7 @@ Linting i formatowanie:
 ## 👤 Autor
 Projekt przygotowany w celach edukacyjnych i demonstracyjnych.
 Możesz mnie znaleźć na GitHubie: [tomsongracz](https://github.com/tomsongracz)
+
 
 
 
