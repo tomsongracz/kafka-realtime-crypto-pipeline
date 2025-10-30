@@ -38,8 +38,8 @@
         "glue:GetJobRuns"
       ],
       "Resource": [
-        "arn:aws:glue:eu-north-1:578988189213:job/bronze-to-silver-job",
-        "arn:aws:glue:eu-north-1:578988189213:job/silver-to-gold-job"
+        "arn:aws:glue:YOUR_REGION:YOUR_ACCOUNT_ID:job/YOUR_BRONZE_TO_SILVER_JOB",
+        "arn:aws:glue:YOUR_REGION:YOUR_ACCOUNT_ID:job/YOUR_SILVER_TO_GOLD_JOB"
       ]
     }
   ]
