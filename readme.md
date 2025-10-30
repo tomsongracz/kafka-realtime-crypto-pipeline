@@ -96,9 +96,24 @@ aws s3 mb s3://kafka-realtime-crypto-glue --region eu-north-1
 
 
 5. **Wygeneruj i przypisz polityki IAM (użyj plików JSON z `aws/`):**
-- Utwórz politykę: `aws iam create-policy --policy-name glue_s3_policy --policy-document file://aws/glue_s3_policy.json`
-- Utwórz rolę: `aws iam create-role --role-name glue_s3_role --assume-role-policy-document file://aws/trust_policy.json`
-- Przypisz politykę: `aws iam attach-role-policy --role-name glue_s3_role --policy-arn arn:aws:iam::YOUR_ACCOUNT:policy/glue_s3_policy`
+   
+- Utwórz politykę:
+
+```bash
+aws iam create-policy --policy-name glue_s3_policy --policy-document file://aws/glue_s3_policy.json
+```
+
+- Utwórz rolę:
+  
+```bash
+aws iam create-role --role-name glue_s3_role --assume-role-policy-document file://aws/trust_policy.json
+```
+
+- Przypisz politykę:
+
+```bash
+aws iam attach-role-policy --role-name glue_s3_role --policy-arn arn:aws:iam::YOUR_ACCOUNT:policy/glue_s3_policy
+```
 
 6. **Wrzuć skrypty Glue do S3:**
 
@@ -252,6 +267,7 @@ kafka-realtime-crypto-pipeline/
 ## 👤 Autor
 Projekt przygotowany w celach edukacyjnych i demonstracyjnych.
 Możesz mnie znaleźć na GitHubie: [tomsongracz](https://github.com/tomsongracz)
+
 
 
 
