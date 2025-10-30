@@ -37,6 +37,52 @@
 
 ---
 
+## Struktura Projektu
+
+```bash
+kafka-realtime-crypto-pipeline/
+│
+├── aws/                                      # Komponenty chmurowe (Spark jobs, konfiguracje AWS)
+│   ├── spark/
+│   │   ├── bronze_to_silver/                 # ETL: przetwarzanie danych z warstwy bronze → silver
+│   │   │   ├── bronze_to_silver_glue.py      # Kod Spark (PySpark / Glue): czyszczenie, walidacja i standaryzacja danych
+│   │   │   └── job_config.json               # Konfiguracja Glue Job (parametry, rola, lokalizacja skryptu)
+│   │   │
+│   │   └── silver_to_gold/                   # ETL: przetwarzanie danych z warstwy silver → gold
+│   │       ├── silver_to_gold_glue.py        # Kod Spark (PySpark / Glue): modelowanie wymiarowe (fact + dim)
+│   │       └── job_config.json               # Konfiguracja Glue Job dla silver → gold
+│   │
+│   ├── trust_policy.json                     # Część IAM Role
+│   ├── snowflake_s3_policy.json              # Czytanie Snowflake z S3
+│   └── glue_s3_policy.json                   # Polityka IAM nadająca Glue Jobowi dostęp do bucketów S3 i CloudWatch
+│
+├── kafka/
+│   ├── producer/
+│   │   └── producer.py                       # Skrypt producenta: pobiera dane z CoinGecko i wysyła do Apache Kafka
+│   ├── consumer/
+│   │   └── consumer.py                       # Skrypt konsumenta: odbiera dane z Kafki i zapisuje do AWS S3 (bronze)
+│   └── docker-compose.yml                    # Konfiguracja Kafki i Zookeepera w środowisku lokalnym
+│
+├── tests/                                    # Testy jednostkowe i integracyjne
+│   ├── test_producer.py                      # Testy dla producer.py
+│   ├── test_consumer.py                      # Testy dla consumer.py
+│   └── test_spark_jobs.py                    # Testy dla jobów Spark (mockowane)
+│
+├── .github/
+│   └── workflows/                    
+│       └── ci.yaml                           # CI
+│
+├── .gitignore                                # Plik ignorowania Git
+├── requirements.txt                          # Lista zależności Pythona
+├── lambda_bronze_trigger.yaml                # Szablon CloudFormation (Lambda trigger na bronze)
+├── lambda_silver_trigger.yaml                # Szablon CloudFormation (Lambda trigger na silver)
+├── dev_tools.sh                              # Skrypt umożliwiający łatwe testy i linting 
+├── start-local.sh                            # Skrypt restartujący kontenery z opcją buildu obrazu
+└── README.md                                 # Dokumentacja projektu
+```
+
+---
+
 ## 🧩 Wymagania
 
 ### 💻 Lokalne:
@@ -60,6 +106,8 @@
   - Storage Integration: `s3_crypto_integration`
   - Stage: `gold_stage`
   - Pipes: `dim_coin_pipe`, `fact_market_metrics_pipe`
+
+---
 
 ## 🧠 Instalacja
 
@@ -146,6 +194,8 @@ aws s3api put-bucket-notification-configuration --bucket kafka-realtime-crypto-b
  - Utwórz Warehouse, Database, Tabele, Stage, Pipes (patrz SQL w repozytorium lub dokumentacji Snowflake).
  - Utwórz Storage Integration i SQS Queue dla Snowpipe (zobacz `snowflake_s3_policy.json`).
 
+---
+
 ## 🐳 Uruchomienie 
 
 1. **Uruchom Kafka + Zookeeper (Docker):**
@@ -185,6 +235,7 @@ aws glue start-job-run --job-name silver-to-gold-job --region eu-north-1
 SELECT * FROM crypto_warehouse.public.dim_coin LIMIT 5;
 SELECT * FROM crypto_warehouse.public.fact_market_metrics LIMIT 5;
 ```
+---
 
 ## 🧪 Testy
 
@@ -209,54 +260,14 @@ Linting i formatowanie:
 ./dev_tools.sh lint
 ```
 
+---
+
 ## 🔄 CI/CD
 
 - **GitHub Actions**: Automatyczne testy + linting na push/PR do `main` (patrz `.github/workflows/ci.yml`).
 - **Deployment**: Ręczne via AWS CLI lub GitHub Actions (można rozszerzyć o CD).
 
-## Struktura Projektu
-
-```bash
-kafka-realtime-crypto-pipeline/
-│
-├── aws/                                      # Komponenty chmurowe (Spark jobs, konfiguracje AWS)
-│   ├── spark/
-│   │   ├── bronze_to_silver/                 # ETL: przetwarzanie danych z warstwy bronze → silver
-│   │   │   ├── bronze_to_silver_glue.py      # Kod Spark (PySpark / Glue): czyszczenie, walidacja i standaryzacja danych
-│   │   │   └── job_config.json               # Konfiguracja Glue Job (parametry, rola, lokalizacja skryptu)
-│   │   │
-│   │   └── silver_to_gold/                   # ETL: przetwarzanie danych z warstwy silver → gold
-│   │       ├── silver_to_gold_glue.py        # Kod Spark (PySpark / Glue): modelowanie wymiarowe (fact + dim)
-│   │       └── job_config.json               # Konfiguracja Glue Job dla silver → gold
-│   │
-│   ├── trust_policy.json                     # Część IAM Role
-│   ├── snowflake_s3_policy.json              # Czytanie Snowflake z S3
-│   └── glue_s3_policy.json                   # Polityka IAM nadająca Glue Jobowi dostęp do bucketów S3 i CloudWatch
-│
-├── kafka/
-│   ├── producer/
-│   │   └── producer.py                       # Skrypt producenta: pobiera dane z CoinGecko i wysyła do Apache Kafka
-│   ├── consumer/
-│   │   └── consumer.py                       # Skrypt konsumenta: odbiera dane z Kafki i zapisuje do AWS S3 (bronze)
-│   └── docker-compose.yml                    # Konfiguracja Kafki i Zookeepera w środowisku lokalnym
-│
-├── tests/                                    # Testy jednostkowe i integracyjne
-│   ├── test_producer.py                      # Testy dla producer.py
-│   ├── test_consumer.py                      # Testy dla consumer.py
-│   └── test_spark_jobs.py                    # Testy dla jobów Spark (mockowane)
-│
-├── .github/
-│   └── workflows/                    
-│       └── ci.yaml                           # CI
-│
-├── .gitignore                                # Plik ignorowania Git
-├── requirements.txt                          # Lista zależności Pythona
-├── lambda_bronze_trigger.yaml                # Szablon CloudFormation (Lambda trigger na bronze)
-├── lambda_silver_trigger.yaml                # Szablon CloudFormation (Lambda trigger na silver)
-├── dev_tools.sh                              # Skrypt umożliwiający łatwe testy i linting 
-├── start-local.sh                            # Skrypt restartujący kontenery z opcją buildu obrazu
-└── README.md                                 # Dokumentacja projektu
-```
+---
 
 ## 🌟 Rozszerzenia i przemyślenia
 
@@ -264,9 +275,12 @@ kafka-realtime-crypto-pipeline/
 - Implementacja monitoringu (CloudWatch Alerts).
 - Dodanie dashboardu (np. QuickSight na Snowflake).
 
+---
+
 ## 👤 Autor
 Projekt przygotowany w celach edukacyjnych i demonstracyjnych.
 Możesz mnie znaleźć na GitHubie: [tomsongracz](https://github.com/tomsongracz)
+
 
 
 
