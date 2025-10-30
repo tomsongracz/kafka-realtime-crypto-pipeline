@@ -21,7 +21,7 @@
 
 ---
 
-## 🚀Opis projektu
+## 🚀 Opis projektu
 
 - **Streaming danych**: Producent (producer) pobiera dane co 10 sekund i wysyła do Kafki.
   
@@ -37,14 +37,14 @@
 
 ---
 
-## Wymagania
+## 🧩 Wymagania
 
-- **Lokalne:**
+### Lokalne:
   - Python 3.11+
   - Docker & Docker Compose
   - AWS CLI (z konfiguracją: `aws configure`)
 
-- **AWS (Free Tier):**
+### AWS (Free Tier):
   - Konto AWS (eu-north-1)
   - IAM Role: `glue_s3_role` z politykami `glue_s3_policy` i `snowflake_s3_policy`
   - Buckety S3: `kafka-realtime-crypto-bronze`, `kafka-realtime-crypto-silver`, `kafka-realtime-crypto-gold`, `kafka-realtime-crypto-glue`
@@ -52,7 +52,7 @@
   - Lambda Functions: `s3-bronze-trigger-glue`, `s3-silver-trigger-glue`
   - CloudFormation Stacks: `bronze-glue-trigger-stack`, `silver-glue-trigger-stack`
 
-- **Snowflake:**
+### Snowflake:
   - Konto Snowflake (trial/free)
   - Warehouse: `COMPUTE_WH` (XSMALL)
   - Database: `crypto_warehouse`
@@ -61,7 +61,7 @@
   - Stage: `gold_stage`
   - Pipes: `dim_coin_pipe`, `fact_market_metrics_pipe`
 
-## Instalacja
+## 🧠 Instalacja
 
 1. **Sklonuj repozytorium:**
 
@@ -131,7 +131,7 @@ Wpisz Access Key ID, Secret Access Key, Region: `eu-north-1`.
  - Utwórz Warehouse, Database, Tabele, Stage, Pipes (patrz SQL w repozytorium lub dokumentacji Snowflake).
  - Utwórz Storage Integration i SQS Queue dla Snowpipe (zobacz `snowflake_s3_policy.json`).
 
-## Uruchomienie Lokalne
+## 🐳 Uruchomienie 
 
 1. **Uruchom Kafka + Zookeeper (Docker):**
 
@@ -252,6 +252,7 @@ kafka-realtime-crypto-pipeline/
 ## 👤 Autor
 Projekt przygotowany w celach edukacyjnych i demonstracyjnych.
 Możesz mnie znaleźć na GitHubie: [tomsongracz](https://github.com/tomsongracz)
+
 
 
 
