@@ -28,7 +28,7 @@
 - **Środowisko lokalne**:
 
 Klaster Apache Kafka uruchamiany jest lokalnie w kontenerach Dockerowych przy użyciu docker-compose.
-Zookeeper pełni rolę koordynatora, a Kafka obsługuje temat (topic) z danymi o kryptowalutach.
+Zookeeper pełni rolę koordynatora, a Kafka obsługuje temat z danymi o kryptowalutach.
 Producer i Consumer komunikują się z tym lokalnym brokerem.
 
 - **Streaming danych**: Producent (`producer.py`) pobiera dane co 10 sekund i wysyła do Kafki.
@@ -304,6 +304,7 @@ Linting i formatowanie:
 ## 👤 Autor
 Projekt przygotowany w celach edukacyjnych i demonstracyjnych.
 Możesz mnie znaleźć na GitHubie: [tomsongracz](https://github.com/tomsongracz)
+
 
 
 
