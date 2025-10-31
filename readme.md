@@ -39,7 +39,7 @@ Producer i Consumer komunikują się z tym lokalnym brokerem.
 
 - **Automatyzacja**: Lambda triggery na S3 uruchamiają Glue jobs automatycznie.
   
-- **Hurtownia danych**: Snowflake z auto-ingestion (Snowpipe) z S3.
+- **Hurtownia danych**: Snowflake z auto-ingestion (Snowpipe) z S3 (gold layer).
   
 - **CI/CD**: GitHub Actions do testów i lintingu.
 
@@ -320,6 +320,7 @@ Linting i formatowanie:
 ## 👤 Autor
 Projekt przygotowany w celach edukacyjnych i demonstracyjnych.
 Możesz mnie znaleźć na GitHubie: [tomsongracz](https://github.com/tomsongracz)
+
 
 
 
